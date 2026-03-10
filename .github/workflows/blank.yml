@@ -1,0 +1,17 @@
+name: My First Action
+# いつ実行するか（今回はコードがpushされた時）
+on: [push]
+
+jobs:
+  # 処理の名前
+  build:
+    # 実行するマシンのOS
+    runs-on: ubuntu-latest
+
+    steps:
+      # リポジトリのコードを読み込む
+      - uses: actions/checkout@v4
+
+      # 実行するコマンド
+      - name: Run a one-line script
+        run: echo Hello, GitHub Actions!
