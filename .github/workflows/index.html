@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MIHO美学院中等教育学校 | 美を求める心の教育</title>
+
+  <!--
+    ============================================================
+    index.html | MIHO美学院中等教育学校 トップページ
+    ============================================================
+
+    【ファイル構成】
+    ├── index.html  ← このファイル(構造 + 動きのロジック)
+    └── style.css   ← 見た目の定義(色・余白・配置)
+
+    【このファイルでやっていること】
+    1. style.css と Google Fonts の読み込み (<head> 内)
+    2. 画面の構造(HTML)の定義 (<body> 内)
+    3. メニューの開閉・サブメニュー切り替えのJavaScript (<script> 内)
+
+    【JavaScript の動きの概要】
+    ・サイドバーの各ナビ項目(li)にホバー/クリックすると
+      → 選んだ li に "active" クラスを付け、ほかから外す
+      → 対応するサブメニューパネルだけ "active" クラスを付ける
+    ・スマホ幅のMENUボタンを押すと body に "menu-open" クラスが付き
+      → CSS側で「body.menu-open .sidebar」が表示される仕組み
+    ============================================================
+  -->
+
+  <!-- 見た目は style.css にすべて分離してあります -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Google Fonts: 明朝体(Shippori Mincho) + ゴシック体(Noto Sans JP) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  >
+</head>
+<body>
+
+<!-- ============================================================
+     ヘッダー
+     スクロールしても上部に固定されます(CSS: position: sticky)
+     ============================================================ -->
+<header>
+  <div class="header-inner">
+
+    <!-- ロゴ(クリックでページ最上部へ) -->
+    <a href="#top" class="logo">
+      MIHO美学院中等教育学校<span>MIHO INSTITUTE OF AESTHETICS</span>
+    </a>
+
+    <!--
+      ハンバーガーボタン: スマホ幅のときだけ表示される(CSS: display:none → display:flex)
+      クリックすると body に "menu-open" クラスが付き、サイドバーがスライドイン
+    -->
+    <button class="menu-trigger" id="menuTrigger" aria-label="メニューを開く">
+      <span class="bars">
+        <span></span><!-- 1本目の線 -->
+        <span></span><!-- 2本目の線(少し短い) -->
+        <span></span><!-- 3本目の線 -->
+      </span>
+      <span class="label">MENU</span>
+    </button>
+
+    <!-- 訪問者別ページ案内ボタン -->
+    <div class="visitor-actions">
+      <a href="#" class="header-btn">卒業生</a>
+      <a href="#" class="header-btn">MIA父母の会</a>
+      <a href="#" class="header-cta">資料請求</a>
+    </div>
+  </div>
+</header>
+
+
+<!-- ============================================================
+     左固定サイドバー
+     PC幅(1024px以上): 常時表示
+     スマホ幅: 上のMENUボタンで開閉
+     ============================================================ -->
+<aside class="sidebar" id="sidebar">
+
+  <!-- スマホ幅のときだけ表示される閉じるボタン -->
+  <button class="menu-close" id="menuClose">CLOSE ✕</button>
+
+  <!-- サイドバーの開閉トグル -->
+  <button class="sidebar-toggle" id="sidebarToggle" aria-label="サイドバーを閉じる">
+    <span>‹</span>
+  </button>
+
+  <!-- 新しいMIHO美学院ロゴマーク -->
+  <a href="#top" class="sidebar-logo-area">
+    <div class="logo-symbol">
+      <svg viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+        <!-- 左半分 (#B78C30) -->
+        <path d="M 48 10 L 15 25 L 15 75 C 38 75, 45 92, 48 125 Z" fill="#B78C30" />
+        <!-- 右半分 (#CC9F26) -->
+        <path d="M 52 10 L 85 25 L 85 75 C 62 75, 55 92, 52 125 Z" fill="#CC9F26" />
+      </svg>
+    </div>
+    <div class="logo-text-en">MIHO</div>
+    <div class="logo-text-ja">美学院</div>
+  </a>
+
+  <!--
+    ナビゲーションリスト
+    ・data-target属性: ホバーしたときに対応するサブメニューパネルのIDを指定
+    ・.active クラス: JSで選ばれた項目に付ける(CSSで矢印表示・色変化)
+  -->
+  <ul class="menu-primary" id="menuPrimary">
+    <li class="active" data-target="panel-about">
+      <button>学校案内 <span class="arrow">›</span></button>
+    </li>
+    <li data-target="panel-life">
+      <button>学校生活 <span class="arrow">›</span></button>
+    </li>
+    <li data-target="panel-news">
+      <button>学校便り <span class="arrow">›</span></button>
+    </li>
+    <li data-target="panel-admission">
+      <button>生徒募集 <span class="arrow">›</span></button>
+    </li>
+  </ul>
+
+  <!-- サイドバー下部のCTAボタン群 -->
+  <div class="menu-bottom">
+    <a href="#">お問合せ →</a>
+    <a href="#">学校見学 →</a>
+  </div>
+</aside>
+
+
+<!-- ============================================================
+     サブメニューフライアウト
+     サイドバーの右横に表示される暗いパネル。
+     ホバーした項目に対応するパネルだけ .active クラスが付いて表示される。
+     ============================================================ -->
+<div class="menu-right" id="menuRight">
+
+  <!-- 学校案内パネル(最初から .active = 最初に表示) -->
+  <div class="submenu-panel active" id="panel-about">
+    <span class="eyebrow">School Guide</span>
+    <h3>学校案内</h3>
+    <ul class="submenu-list">
+      <li><a href="#">建学の精神</a></li>
+      <li><a href="#">教育について</a></li>
+      <li><a href="#">三つの芸術性</a></li>
+      <li><a href="#">カリキュラム</a></li>
+      <li><a href="#">校長メッセージ</a></li>
+      <li><a href="#">スタッフ紹介</a></li>
+    </ul>
+  </div>
+
+  <!-- 学校生活パネル -->
+  <div class="submenu-panel" id="panel-life">
+    <span class="eyebrow">School Life</span>
+    <h3>学校生活</h3>
+    <ul class="submenu-list">
+      <li><a href="#">寮生活</a></li>
+      <li><a href="#">一日のスケジュール</a></li>
+      <li><a href="#">行事・年間予定</a></li>
+      <li><a href="#">施設のご案内</a></li>
+      <li><a href="#">MIHO MUSEUMでの学び</a></li>
+      <li><a href="#">自然農法・食事づくり</a></li>
+    </ul>
+  </div>
+
+  <!-- 学校便りパネル -->
+  <div class="submenu-panel" id="panel-news">
+    <span class="eyebrow">News</span>
+    <h3>学校便り</h3>
+    <ul class="submenu-list">
+      <li><a href="#">お知らせ一覧</a></li>
+      <li><a href="#">学校説明会</a></li>
+      <li><a href="#">寄付・支援</a></li>
+      <li><a href="#">採用情報</a></li>
+    </ul>
+  </div>
+
+  <!-- 生徒募集パネル -->
+  <div class="submenu-panel" id="panel-admission">
+    <span class="eyebrow">Admission</span>
+    <h3>生徒募集</h3>
+    <ul class="submenu-list">
+      <li><a href="#">入試要項</a></li>
+      <li><a href="#">資料請求</a></li>
+      <li><a href="#">アクセス</a></li>
+      <li><a href="#">よくある質問</a></li>
+      <li><a href="#">お問い合わせ</a></li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- ============================================================
+     ページ本体(.page)
+     サイドバーの分だけ左マージンを取るラッパー(CSS: margin-left: var(--sidebar-w))
+     ============================================================ -->
+<div class="page">
+<main id="top">
+
+
+  <!-- ============ ヒーローセクション ============ -->
+  <section class="hero">
+    <video class="hero-video" autoplay muted loop playsinline>
+      <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4">
+    </video>
+    <div class="wrap hero-grid">
+
+      <!-- 左側: テキスト -->
+      <div>
+        <span class="eyebrow">MIHO Institute of Aesthetics</span>
+        <h1>
+          <small>滋賀・信楽 全寮制中等教育学校</small>
+          美を求める心の教育
+        </h1>
+        <p class="hero-sub">
+          真を学び、善を行い、美を求める——。1学年40名の少人数・全寮制のもと、
+          「生活即教育」「独立と協調の精神」を六年間の生活の中で育みます。
+        </p>
+        <div class="hero-actions">
+          <a href="#" class="btn-primary">学校紹介動画を見る →</a>
+          <a href="#about" class="btn-ghost">建学の精神を読む</a>
+        </div>
+        <!-- スクロール誘導(流れる縦線 + SCROLL文字) -->
+        <div class="scroll-cue">
+          <div class="line"></div>SCROLL
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ============ トピックスカード(横スクロール) ============ -->
+  <section class="topics">
+    <div class="wrap">
+      <div class="topics-track">
+        <!-- 各カード: 写真差し替え時は .swatch を削除して <img> を追加 -->
+        <div class="topic-card">
+          <span class="tag">海外プレテスト</span>
+          <div class="swatch sw-clay"></div>
+          <div class="label">2026年度 海外プレテスト 申込受付開始</div>
+        </div>
+        <div class="topic-card">
+          <span class="tag">学校説明会</span>
+          <div class="swatch sw-moss"></div>
+          <div class="label">夏季学校説明会 参加申込はこちら</div>
+        </div>
+        <div class="topic-card">
+          <span class="tag">寮生活</span>
+          <div class="swatch sw-glass"></div>
+          <div class="label">寮生活ドキュメント公開中</div>
+        </div>
+        <div class="topic-card">
+          <span class="tag">MIHO MUSEUM</span>
+          <div class="swatch sw-stone"></div>
+          <div class="label">特別鑑賞授業レポート</div>
+        </div>
+        <div class="topic-card">
+          <span class="tag">生徒募集</span>
+          <div class="swatch sw-clay"></div>
+          <div class="label">2027年度 入学者募集要項を公開</div>
+        </div>
+      </div>
+      <!-- 横スクロール進捗を示すスライダー -->
+      <div class="topics-slider-container">
+        <div class="topics-slider-track">
+          <div class="topics-slider-thumb" id="topicsSliderThumb"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ お知らせ ============ -->
+  <section class="news" id="news">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">News &amp; Topics</span>
+          <h2>お知らせ</h2>
+        </div>
+        <a href="#" class="more-link">お知らせ一覧をみる</a>
+      </div>
+
+      <!-- カテゴリタブ -->
+      <div class="tabs" role="tablist" aria-label="お知らせのカテゴリ">
+        <button type="button" class="tab active" data-filter="all">すべて</button>
+        <button type="button" class="tab" data-filter="notice">お知らせ</button>
+        <button type="button" class="tab" data-filter="event">学校説明会</button>
+        <button type="button" class="tab" data-filter="admission">生徒募集</button>
+      </div>
+
+      <!-- お知らせ一覧 -->
+      <div class="news-list">
+        <div class="news-row" data-category="admission">
+          <span class="date">2026.06.01</span>
+          <span class="cat">生徒募集</span>
+          <a class="ttl" href="#">2026年度 海外プレテスト申込受付開始のお知らせ</a>
+        </div>
+        <div class="news-row" data-category="notice">
+          <span class="date">2026.05.26</span>
+          <span class="cat">お知らせ</span>
+          <a class="ttl" href="#">寮生活ドキュメント映像を公開しました</a>
+        </div>
+        <div class="news-row" data-category="event">
+          <span class="date">2026.05.12</span>
+          <span class="cat">学校説明会</span>
+          <a class="ttl" href="#">夏季学校説明会・個別相談会の日程を公開</a>
+        </div>
+        <div class="news-row" data-category="notice">
+          <span class="date">2026.04.20</span>
+          <span class="cat">お知らせ</span>
+          <a class="ttl" href="#">MIHO MUSEUM特別鑑賞授業を実施しました</a>
+        </div>
+        <div class="news-row" data-category="notice">
+          <span class="date">2026.04.01</span>
+          <span class="cat">お知らせ</span>
+          <a class="ttl" href="#">2026年度入学式を行いました</a>
+        </div>
+        <div class="news-row" data-category="admission">
+          <span class="date">2026.03.15</span>
+          <span class="cat">生徒募集</span>
+          <a class="ttl" href="#">2027年度入学者向け 出願受付開始</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ 三つの芸術性(特長3カラム) ============ -->
+  <section class="features" id="about">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Three Pillars</span>
+          <h2>三つの芸術性</h2>
+        </div>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="feature-grid">
+
+        <div class="feature">
+          <div class="swatch sw-glass"></div><!-- 写真差し替え予定 -->
+          <span class="num">Spirituality</span>
+          <h3>敬虔な祈りと<br>師の教えを学ぶ</h3>
+          <a class="more" href="#">詳しくみる</a>
+        </div>
+
+        <div class="feature">
+          <div class="swatch sw-moss"></div><!-- 写真差し替え予定 -->
+          <span class="num">Natural Agriculture &amp; Gardening</span>
+          <h3>自然農法を通じて<br>自然順応・自然尊重を学ぶ</h3>
+          <a class="more" href="#">詳しくみる</a>
+        </div>
+
+        <div class="feature">
+          <div class="swatch sw-clay"></div><!-- 写真差し替え予定 -->
+          <span class="num">Beauty of MIHO MUSEUM</span>
+          <h3>世界的建築と美術品で<br>美の感性を培う</h3>
+          <a class="more" href="#">詳しくみる</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ 学院だより(記事カード) ============ -->
+  <section class="journal" id="life">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">MIHO Journal</span>
+          <h2>学院だより</h2>
+        </div>
+        <a href="#" class="more-link">すべての記事をみる →</a>
+      </div>
+      <div class="journal-track" id="journalTrack">
+        <div class="journal-grid" id="journalGrid">
+          <div class="jcard">
+            <div class="thumb sw-clay"></div><!-- 写真差し替え予定 -->
+            <span class="cat">寮生活</span>
+            <p>朝の祈りと寮の清掃から始まる一日。「生活即教育」が息づく信楽の朝。</p>
+          </div>
+          <div class="jcard">
+            <div class="thumb sw-moss"></div>
+            <span class="cat">自然農法</span>
+            <p>自家製みそ作りに挑戦。育てた大豆から学ぶ、食べものへの感謝。</p>
+          </div>
+          <div class="jcard">
+            <div class="thumb sw-glass"></div>
+            <span class="cat">MIHO MUSEUM</span>
+            <p>ガラス越しではない鑑賞授業。学芸部長と直接作品に向き合う時間。</p>
+          </div>
+          <div class="jcard">
+            <div class="thumb sw-stone"></div>
+            <span class="cat">日本文化</span>
+            <p>華道・書道・茶道の専門家を招いて。六年間で培う、所作の美しさ。</p>
+          </div>
+          <div class="jcard">
+            <div class="thumb sw-clay"></div>
+            <span class="cat">未来創造</span>
+            <p>次世代のデザインを育む学びと実践が信楽で動き出す。</p>
+          </div>
+          <div class="jcard">
+            <div class="thumb sw-moss"></div>
+            <span class="cat">進学支援</span>
+            <p>個別指導とキャリア形成で進路をしっかりサポート。</p>
+          </div>
+          <div class="jcard">
+            <div class="thumb sw-glass"></div>
+            <span class="cat">国際交流</span>
+            <p>海外研修や留学プログラムで世界を見る目を育てる。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ============ 学校概要(新レイアウト) ============ -->
+  <section class="overview" id="overview">
+    <div class="wrap overview-grid">
+      <div class="overview-copy">
+        <span class="eyebrow">School Overview</span>
+        <h2>学校概要</h2>
+        <p>テクノロジー×デザインで人間の未来を変える学校。つくるのは未来。</p>
+        <a href="#" class="btn-primary">詳しくみる</a>
+      </div>
+      <div class="overview-panel"></div>
+    </div>
+  </section>
+
+</main>
+
+
+<!-- ============ フッター ============ -->
+<footer id="admission">
+  <div class="wrap">
+
+    <!-- サイトマップ(ロゴ + 4カテゴリのリンク集) -->
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#top" class="logo">
+          MIHO美学院
+          <span>MIHO INSTITUTE OF AESTHETICS</span>
+        </a>
+        <p>滋賀県甲賀市信楽町畑369</p>
+      </div>
+
+      <div class="fcol">
+        <h4>学校案内</h4>
+        <a href="#">建学の精神</a>
+        <a href="#">教育について</a>
+        <a href="#">三つの芸術性</a>
+        <a href="#">校長メッセージ</a>
+      </div>
+
+      <div class="fcol">
+        <h4>学校生活</h4>
+        <a href="#">寮生活</a>
+        <a href="#">一日のスケジュール</a>
+        <a href="#">施設のご案内</a>
+        <a href="#">年間行事</a>
+      </div>
+
+      <div class="fcol">
+        <h4>学校便り</h4>
+        <a href="#">お知らせ一覧</a>
+        <a href="#">学校説明会</a>
+        <a href="#">寄付・支援</a>
+        <a href="#">採用情報</a>
+      </div>
+
+      <div class="fcol">
+        <h4>生徒募集</h4>
+        <a href="#">入試要項</a>
+        <a href="#">資料請求</a>
+        <a href="#">アクセス</a>
+        <a href="#">よくある質問</a>
+      </div>
+    </div>
+
+    <!-- グラデーション罫線 -->
+    <hr class="glaze-rule">
+
+    <!-- コピーライト + SNSアイコン -->
+    <div class="footer-bottom">
+      <span>© MIHO Institute of Aesthetics</span>
+      <div class="sns-icons">
+        <a href="#">IG</a>
+        <a href="#">X</a>
+        <a href="#">YT</a>
+        <a href="#">nt</a>
+      </div>
+    </div>
+
+  </div>
+</footer>
+</div><!-- /.page -->
+
+
+<!-- ============================================================
+     JavaScript: メニューの開閉 & サブメニューの切り替え
+     ============================================================ -->
+<script>
+  // --- 操作する要素をまとめて取得しておく ---
+  const body    = document.body;
+  const trigger = document.getElementById('menuTrigger'); // ハンバーガーボタン
+  const closeBtn= document.getElementById('menuClose');   // CLOSEボタン
+  const sidebarToggle = document.getElementById('sidebarToggle'); // サイドバー折りたたみボタン
+  // サイドバー内のすべての <li> を配列のように取得
+  const items   = document.querySelectorAll('#menuPrimary li');
+
+  // --- メニューを開く / 閉じる ---
+  // body に "menu-open" クラスを付け外しするだけで
+  // CSS側が「サイドバーを表示する / 隠す」を自動で切り替えてくれる
+  function openMenu()  { body.classList.add('menu-open');    }
+  function closeMenu() { body.classList.remove('menu-open'); }
+
+  // ハンバーガーボタンをクリックしたとき
+  trigger.addEventListener('click', function() {
+    // 今開いていれば閉じる、閉じていれば開く
+    if (body.classList.contains('menu-open')) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  });
+
+  // CLOSEボタンをクリックしたとき
+  closeBtn.addEventListener('click', closeMenu);
+
+  // サイドバーの折りたたみ切り替え
+  if (sidebarToggle) {
+    sidebarToggle.addEventListener('click', function() {
+      body.classList.toggle('sidebar-collapsed');
+      const isCollapsed = body.classList.contains('sidebar-collapsed');
+      sidebarToggle.setAttribute('aria-label', isCollapsed ? 'サイドバーを開く' : 'サイドバーを閉じる');
+    });
+  }
+
+  // キーボードの Escape キーでも閉じられるようにする
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeMenu();
+  });
+
+  // --- サブメニューの切り替え ---
+  // 引数に受け取った li 要素をアクティブにする関数
+  function activate(targetLi) {
+    // まず全 li の .active を外す
+    items.forEach(function(li) {
+      li.classList.remove('active');
+    });
+    // 選ばれた li だけ .active を付ける
+    targetLi.classList.add('active');
+
+    // 全サブメニューパネルの .active を外す
+    document.querySelectorAll('.submenu-panel').forEach(function(panel) {
+      panel.classList.remove('active');
+    });
+    // data-target 属性のIDに対応するパネルを表示する
+    var panelId = targetLi.getAttribute('data-target');
+    document.getElementById(panelId).classList.add('active');
+  }
+
+  // 各 li に対してホバー時とクリック時に activate() を呼ぶ
+  items.forEach(function(li) {
+    li.addEventListener('mouseenter', function() { activate(li); }); // マウスが乗ったとき
+    li.querySelector('button').addEventListener('click', function() { activate(li); }); // クリックしたとき
+  });
+
+  // --- スクロール割合の監視とCSS変数への反映 ---
+  function updateScrollRatio() {
+    var scrollTop = window.scrollY || document.documentElement.scrollTop;
+    var docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    var ratio = docHeight > 0 ? Math.min(scrollTop / docHeight, 1) : 0;
+    document.body.style.setProperty('--scroll-ratio', ratio);
+  }
+
+  window.addEventListener('scroll', updateScrollRatio);
+  window.addEventListener('resize', updateScrollRatio);
+  updateScrollRatio(); // 初期化
+
+  // --- トピックス横スクロールスライダーの連動 ---
+  var topicsTrack = document.querySelector('.topics-track');
+  var sliderThumb = document.getElementById('topicsSliderThumb');
+
+  function updateTopicsSlider() {
+    if (!topicsTrack || !sliderThumb) return;
+    var maxScroll = topicsTrack.scrollWidth - topicsTrack.clientWidth;
+    if (maxScroll <= 0) return;
+    
+    var scrollPercent = topicsTrack.scrollLeft / maxScroll;
+    
+    sliderThumb.style.left = (scrollPercent * 100) + '%';
+    document.querySelector('.topics-slider-track').style.setProperty('--slider-fill', (scrollPercent * 100) + '%');
+  }
+
+  if (topicsTrack) {
+    topicsTrack.addEventListener('scroll', updateTopicsSlider);
+    window.addEventListener('resize', updateTopicsSlider);
+    updateTopicsSlider(); // 初期表示
+
+    var sliderTrack = document.querySelector('.topics-slider-track');
+    var isDragging = false;
+
+    function setTopicsPositionFromEvent(event) {
+      var rect = sliderTrack.getBoundingClientRect();
+      var x = event.clientX !== undefined ? event.clientX : event.touches[0].clientX;
+      var percent = (x - rect.left) / rect.width;
+      percent = Math.min(Math.max(percent, 0), 1);
+      var maxScroll = topicsTrack.scrollWidth - topicsTrack.clientWidth;
+      topicsTrack.scrollLeft = percent * maxScroll;
+    }
+
+    sliderTrack.addEventListener('click', function(event) {
+      setTopicsPositionFromEvent(event);
+    });
+
+    sliderTrack.addEventListener('pointerdown', function(event) {
+      isDragging = true;
+      sliderTrack.setPointerCapture(event.pointerId);
+      setTopicsPositionFromEvent(event);
+    });
+
+    sliderTrack.addEventListener('pointermove', function(event) {
+      if (!isDragging) return;
+      setTopicsPositionFromEvent(event);
+    });
+
+    sliderTrack.addEventListener('pointerup', function(event) {
+      isDragging = false;
+      sliderTrack.releasePointerCapture(event.pointerId);
+    });
+
+    sliderTrack.addEventListener('pointerleave', function() {
+      isDragging = false;
+    });
+  }
+</script>
+<script src="script.js"></script>
+
+</body>
+</html>
